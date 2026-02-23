@@ -1,0 +1,107 @@
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  imagePullSecrets: []
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+replicaCount: 1
+revisionHistoryLimit: 10
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+containerSecurityContext: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+automountServiceAccountToken: true
+
+rbac:
+  create: false
+  clusterWide: false
+  rules: []
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  portName: http
+  targetPort: http
+  annotations: {}
+  additionalPorts: []
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+livenessProbe: {}
+readinessProbe: {}
+startupProbe: {}
+
+command: []
+args: []
+env: []
+envFrom: []
+
+configMounts: []
+extraVolumeMounts: []
+extraVolumes: []
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: null
+  metrics: []
+  behavior: {}
+
+pdb:
+  enabled: false
+  minAvailable: null
+  maxUnavailable: null
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+          servicePort: http
+  tls: []
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: ""
+    scrapeTimeout: ""
+    honorLabels: false
+    additionalLabels: {}
+    relabelings: []
+    metricRelabelings: []
+    endpoints:
+      - port: http
+        path: /metrics
+        interval: ""
+        scrapeTimeout: ""
