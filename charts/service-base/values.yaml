@@ -9,7 +9,7 @@ global:
 
 image:
   registry: ""
-  repository: ""
+  repository: "ghcr.io/agynio/placeholder"
   tag: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
