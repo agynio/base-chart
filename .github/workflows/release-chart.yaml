@@ -1,0 +1,46 @@
+name: Release Helm Chart
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Set version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Helm lint
+        run: helm lint charts/service-base
+
+      - name: Package chart
+        run: |
+          helm package charts/service-base \
+            --version "$VERSION" \
+            --app-version "$VERSION" \
+            --destination dist
+
+      - name: Login to GHCR
+        run: |
+          helm registry login ghcr.io \
+            -u "${{ github.actor }}" \
+            -p "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Push chart
+        run: helm push "dist/service-base-$VERSION.tgz" oci://ghcr.io/agynio/helm

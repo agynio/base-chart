@@ -1,0 +1,142 @@
+nameOverride: ""
+fullnameOverride: ""
+
+commonAnnotations: {}
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+image:
+  registry: ""
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+replicaCount: 1
+revisionHistoryLimit: 10
+updateStrategy: {}
+deploymentAnnotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  enabled: false
+  fsGroup: null
+securityContext:
+  enabled: true
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+automountServiceAccountToken: true
+
+rbac:
+  create: false
+  clusterWide: false
+  rules: []
+
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  labels: {}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+priorityClassName: ""
+terminationGracePeriodSeconds: null
+topologySpreadConstraints: []
+
+initContainers: []
+extraContainers: []
+
+lifecycle: {}
+
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false
+startupProbe:
+  enabled: false
+
+command: []
+args: []
+env: []
+envFrom: []
+extraEnvVars: []
+extraEnvVarsCM: ""
+extraEnvVarsSecret: ""
+
+configMounts: []
+extraVolumeMounts: []
+extraVolumes: []
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: null
+  metrics: []
+  behavior: {}
+
+pdb:
+  enabled: false
+  minAvailable: null
+  maxUnavailable: null
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+          servicePort: http
+  tls: []
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: ""
+    scrapeTimeout: ""
+    honorLabels: false
+    labels: {}
+    annotations: {}
+    relabelings: []
+    metricRelabelings: []
+    endpoints:
+      - port: http
+        path: /metrics
+        interval: ""
+        scrapeTimeout: ""
