@@ -13,7 +13,7 @@ Add the library chart as a dependency:
 dependencies:
   - name: service-base
     version: 0.1.0
-    repository: oci://ghcr.io/agynio/helm
+    repository: oci://ghcr.io/agynio/charts
 ```
 
 Then include the templates in your chart:

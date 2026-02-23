@@ -43,4 +43,4 @@ jobs:
             -p "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Push chart
-        run: helm push "dist/service-base-$VERSION.tgz" oci://ghcr.io/agynio/helm
+        run: helm push "dist/service-base-$VERSION.tgz" oci://ghcr.io/agynio/charts
