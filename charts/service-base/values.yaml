@@ -23,7 +23,16 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext: {}
-containerSecurityContext: {}
+securityContext:
+  enabled: true
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
 
 serviceAccount:
   create: true
@@ -41,6 +50,7 @@ service:
   enabled: true
   type: ClusterIP
   annotations: {}
+  labels: {}
   ports:
     - name: http
       port: 80
@@ -63,6 +73,8 @@ topologySpreadConstraints: []
 
 initContainers: []
 extraContainers: []
+
+lifecycle: {}
 
 livenessProbe:
   enabled: false

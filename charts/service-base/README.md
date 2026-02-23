@@ -47,10 +47,13 @@ Key values (see `values.yaml` for full list):
 - `global.imageRegistry` and `image.registry` (registry resolution)
 - `global.imagePullSecrets` and `image.pullSecrets` (merged in PodSpec)
 - `service.ports[]` for service ports
+- `service.labels` for extra service metadata labels
 - `ingress.ingressClassName` and `ingress.hosts[].paths[]`
 - `autoscaling` for HPA targets/behavior
 - `pdb` for PodDisruptionBudget settings
 - `configMounts[].sourceName` to mount existing ConfigMaps/Secrets
+- `securityContext.enabled` with hardened defaults
+- `lifecycle` for container lifecycle hooks
 - `metrics.serviceMonitor` for Prometheus Operator ServiceMonitors
 
 ### Example values for a service chart

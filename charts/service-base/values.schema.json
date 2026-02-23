@@ -117,9 +117,27 @@
       "type": "object",
       "default": {}
     },
-    "containerSecurityContext": {
+    "securityContext": {
       "type": "object",
-      "default": {}
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "default": {
+        "enabled": true,
+        "runAsNonRoot": true,
+        "readOnlyRootFilesystem": true,
+        "allowPrivilegeEscalation": false,
+        "capabilities": {
+          "drop": ["ALL"]
+        },
+        "seccompProfile": {
+          "type": "RuntimeDefault"
+        }
+      }
     },
     "serviceAccount": {
       "type": "object",
@@ -229,6 +247,13 @@
           },
           "default": {}
         },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {}
+        },
         "ports": {
           "type": "array",
           "minItems": 1,
@@ -279,6 +304,7 @@
         "enabled": true,
         "type": "ClusterIP",
         "annotations": {},
+        "labels": {},
         "ports": [
           {
             "name": "http",
@@ -366,6 +392,10 @@
         "type": "object"
       },
       "default": []
+    },
+    "lifecycle": {
+      "type": "object",
+      "default": {}
     },
     "livenessProbe": {
       "type": "object",

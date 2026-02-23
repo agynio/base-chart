@@ -83,6 +83,10 @@ spec:
           securityContext:
 {{ $containerSecurityContext | nindent 12 }}
 {{- end }}
+{{- with .Values.lifecycle }}
+          lifecycle:
+{{ toYaml . | nindent 12 }}
+{{- end }}
 {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
 {{ omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}

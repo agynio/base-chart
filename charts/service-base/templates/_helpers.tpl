@@ -54,7 +54,12 @@ default
 {{- end -}}
 
 {{- define "service-base.image" -}}
-{{- $registry := default .Values.global.imageRegistry .Values.image.registry -}}
+{{- $registry := "" -}}
+{{- if .Values.global.imageRegistry -}}
+{{- $registry = .Values.global.imageRegistry -}}
+{{- else -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
 {{- $registry = trimSuffix "/" $registry -}}
 {{- if $registry -}}
 {{- printf "%s/%s:%s" $registry .Values.image.repository (include "service-base.imageTag" .) -}}
@@ -173,7 +178,7 @@ envFrom:
 {{- end -}}
 
 {{- define "service-base.securityContext" -}}
-{{- with .Values.containerSecurityContext }}
-{{ toYaml . }}
+{{- if .Values.securityContext.enabled }}
+{{ omit .Values.securityContext "enabled" | toYaml }}
 {{- end }}
 {{- end -}}

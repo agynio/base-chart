@@ -6,6 +6,9 @@ metadata:
   name: {{ include "service-base.fullname" . }}
   labels:
 {{ include "service-base.labels" . | nindent 4 }}
+{{- with .Values.service.labels }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
 {{- with .Values.service.annotations }}
   annotations:
 {{ toYaml . | nindent 4 }}
