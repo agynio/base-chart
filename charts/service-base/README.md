@@ -44,6 +44,7 @@ Key values (see `values.yaml` for full list):
 
 - `image.repository` (required)
 - `image.tag` (defaults to `.Chart.AppVersion`)
+- `image.repository` defaults to a placeholder; consuming charts must override
 - `global.imageRegistry` and `image.registry` (registry resolution)
 - `global.imagePullSecrets` and `image.pullSecrets` (merged in PodSpec)
 - `service.ports[]` for service ports
