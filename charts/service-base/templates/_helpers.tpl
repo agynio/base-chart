@@ -172,8 +172,8 @@ envFrom:
 {{- end -}}
 
 {{- define "service-base.podSecurityContext" -}}
-{{- with .Values.podSecurityContext }}
-{{ toYaml . }}
+{{- if .Values.podSecurityContext.enabled }}
+{{ omit .Values.podSecurityContext "enabled" | toYaml }}
 {{- end }}
 {{- end -}}
 

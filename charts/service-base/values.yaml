@@ -22,7 +22,9 @@ deploymentAnnotations: {}
 podAnnotations: {}
 podLabels: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  enabled: false
+  fsGroup: null
 securityContext:
   enabled: true
   runAsNonRoot: true
