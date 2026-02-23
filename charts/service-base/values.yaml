@@ -1,10 +1,14 @@
 nameOverride: ""
 fullnameOverride: ""
 
+commonAnnotations: {}
+
 global:
+  imageRegistry: ""
   imagePullSecrets: []
 
 image:
+  registry: ""
   repository: ""
   tag: ""
   pullPolicy: IfNotPresent
@@ -12,6 +16,8 @@ image:
 
 replicaCount: 1
 revisionHistoryLimit: 10
+updateStrategy: {}
+deploymentAnnotations: {}
 
 podAnnotations: {}
 podLabels: {}
@@ -34,11 +40,12 @@ rbac:
 service:
   enabled: true
   type: ClusterIP
-  port: 80
-  portName: http
-  targetPort: http
   annotations: {}
-  additionalPorts: []
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
 
 containerPorts:
   - name: http
@@ -50,14 +57,27 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-livenessProbe: {}
-readinessProbe: {}
-startupProbe: {}
+priorityClassName: ""
+terminationGracePeriodSeconds: null
+topologySpreadConstraints: []
+
+initContainers: []
+extraContainers: []
+
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false
+startupProbe:
+  enabled: false
 
 command: []
 args: []
 env: []
 envFrom: []
+extraEnvVars: []
+extraEnvVarsCM: ""
+extraEnvVarsSecret: ""
 
 configMounts: []
 extraVolumeMounts: []
@@ -79,7 +99,7 @@ pdb:
 
 ingress:
   enabled: false
-  className: ""
+  ingressClassName: ""
   annotations: {}
   hosts:
     - host: chart-example.local
@@ -97,7 +117,8 @@ metrics:
     interval: ""
     scrapeTimeout: ""
     honorLabels: false
-    additionalLabels: {}
+    labels: {}
+    annotations: {}
     relabelings: []
     metricRelabelings: []
     endpoints:

@@ -11,10 +11,21 @@
       "type": "string",
       "default": ""
     },
+    "commonAnnotations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    },
     "global": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "imageRegistry": {
+          "type": "string",
+          "default": ""
+        },
         "imagePullSecrets": {
           "type": "array",
           "items": {
@@ -24,6 +35,7 @@
         }
       },
       "default": {
+        "imageRegistry": "",
         "imagePullSecrets": []
       }
     },
@@ -32,6 +44,10 @@
       "additionalProperties": false,
       "required": ["repository"],
       "properties": {
+        "registry": {
+          "type": "string",
+          "default": ""
+        },
         "repository": {
           "type": "string",
           "minLength": 1,
@@ -55,6 +71,7 @@
         }
       },
       "default": {
+        "registry": "",
         "repository": "",
         "tag": "",
         "pullPolicy": "IfNotPresent",
@@ -70,6 +87,17 @@
       "type": "integer",
       "minimum": 0,
       "default": 10
+    },
+    "updateStrategy": {
+      "type": "object",
+      "default": {}
+    },
+    "deploymentAnnotations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
     },
     "podAnnotations": {
       "type": "object",
@@ -194,31 +222,6 @@
           "type": "string",
           "default": "ClusterIP"
         },
-        "port": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 65535,
-          "default": 80
-        },
-        "portName": {
-          "type": "string",
-          "minLength": 1,
-          "default": "http"
-        },
-        "targetPort": {
-          "oneOf": [
-            {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 65535
-            },
-            {
-              "type": "string",
-              "minLength": 1
-            }
-          ],
-          "default": "http"
-        },
         "annotations": {
           "type": "object",
           "additionalProperties": {
@@ -226,14 +229,16 @@
           },
           "default": {}
         },
-        "additionalPorts": {
+        "ports": {
           "type": "array",
+          "minItems": 1,
           "items": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "port": {
                 "type": "integer",
@@ -260,17 +265,28 @@
             },
             "required": ["name", "port", "targetPort"]
           },
-          "default": []
+          "default": [
+            {
+              "name": "http",
+              "port": 80,
+              "targetPort": "http",
+              "protocol": "TCP"
+            }
+          ]
         }
       },
       "default": {
         "enabled": true,
         "type": "ClusterIP",
-        "port": 80,
-        "portName": "http",
-        "targetPort": "http",
         "annotations": {},
-        "additionalPorts": []
+        "ports": [
+          {
+            "name": "http",
+            "port": 80,
+            "targetPort": "http",
+            "protocol": "TCP"
+          }
+        ]
       }
     },
     "containerPorts": {
@@ -321,17 +337,74 @@
       "type": "object",
       "default": {}
     },
+    "priorityClassName": {
+      "type": "string",
+      "default": ""
+    },
+    "terminationGracePeriodSeconds": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "default": null
+    },
+    "topologySpreadConstraints": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "initContainers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "extraContainers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
     "livenessProbe": {
       "type": "object",
-      "default": {}
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "default": {
+        "enabled": false
+      }
     },
     "readinessProbe": {
       "type": "object",
-      "default": {}
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "default": {
+        "enabled": false
+      }
     },
     "startupProbe": {
       "type": "object",
-      "default": {}
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "default": {
+        "enabled": false
+      }
     },
     "command": {
       "type": "array",
@@ -361,6 +434,21 @@
       },
       "default": []
     },
+    "extraEnvVars": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "extraEnvVarsCM": {
+      "type": "string",
+      "default": ""
+    },
+    "extraEnvVarsSecret": {
+      "type": "string",
+      "default": ""
+    },
     "configMounts": {
       "type": "array",
       "items": {
@@ -368,6 +456,10 @@
         "additionalProperties": false,
         "properties": {
           "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceName": {
             "type": "string",
             "minLength": 1
           },
@@ -404,7 +496,7 @@
             }
           }
         },
-        "required": ["name", "mountPath"]
+        "required": ["name", "sourceName", "mountPath"]
       },
       "default": []
     },
@@ -574,7 +666,7 @@
           "type": "boolean",
           "default": false
         },
-        "className": {
+        "ingressClassName": {
           "type": "string",
           "default": ""
         },
@@ -655,7 +747,7 @@
       },
       "default": {
         "enabled": false,
-        "className": "",
+        "ingressClassName": "",
         "annotations": {},
         "hosts": [
           {
@@ -704,7 +796,14 @@
               "type": "boolean",
               "default": false
             },
-            "additionalLabels": {
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "default": {}
+            },
+            "annotations": {
               "type": "object",
               "additionalProperties": {
                 "type": "string"
@@ -767,7 +866,8 @@
             "interval": "",
             "scrapeTimeout": "",
             "honorLabels": false,
-            "additionalLabels": {},
+            "labels": {},
+            "annotations": {},
             "relabelings": [],
             "metricRelabelings": [],
             "endpoints": [
@@ -789,7 +889,8 @@
           "interval": "",
           "scrapeTimeout": "",
           "honorLabels": false,
-          "additionalLabels": {},
+          "labels": {},
+          "annotations": {},
           "relabelings": [],
           "metricRelabelings": [],
           "endpoints": [

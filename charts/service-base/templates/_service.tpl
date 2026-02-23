@@ -15,11 +15,7 @@ spec:
   selector:
 {{ include "service-base.selectorLabels" . | nindent 4 }}
   ports:
-    - name: {{ .Values.service.portName }}
-      port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
-      protocol: TCP
-{{- range .Values.service.additionalPorts }}
+{{- range .Values.service.ports }}
     - name: {{ .name }}
       port: {{ .port }}
       targetPort: {{ .targetPort }}

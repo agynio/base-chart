@@ -1,4 +1,4 @@
-{{- define "service-base.servicemonitor" -}}
+{{- define "service-base.metrics" -}}
 {{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -6,7 +6,11 @@ metadata:
   name: {{ include "service-base.fullname" . }}
   labels:
 {{ include "service-base.labels" . | nindent 4 }}
-{{- with .Values.metrics.serviceMonitor.additionalLabels }}
+{{- with .Values.metrics.serviceMonitor.labels }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+{{- with .Values.metrics.serviceMonitor.annotations }}
+  annotations:
 {{ toYaml . | nindent 4 }}
 {{- end }}
 {{- if .Values.metrics.serviceMonitor.namespace }}
@@ -16,9 +20,11 @@ spec:
   selector:
     matchLabels:
 {{ include "service-base.selectorLabels" . | nindent 6 }}
+  {{- if and .Values.metrics.serviceMonitor.namespace (ne .Values.metrics.serviceMonitor.namespace .Release.Namespace) }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ .Values.metrics.serviceMonitor.namespace }}
+  {{- end }}
   endpoints:
 {{- range .Values.metrics.serviceMonitor.endpoints }}
     - port: {{ .port }}

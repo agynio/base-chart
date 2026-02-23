@@ -5,11 +5,20 @@ metadata:
   name: {{ include "service-base.fullname" . }}
   labels:
 {{ include "service-base.labels" . | nindent 4 }}
+  {{- $annotations := include "service-base.commonAnnotations" . }}
+  {{- if $annotations }}
+  annotations:
+{{ $annotations | nindent 4 }}
+  {{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- with .Values.updateStrategy }}
+  strategy:
+{{ toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
 {{ include "service-base.selectorLabels" . | nindent 6 }}
@@ -25,12 +34,23 @@ spec:
 {{ toYaml . | nindent 8 }}
 {{- end }}
     spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- if not (eq .Values.terminationGracePeriodSeconds nil) }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
       serviceAccountName: {{ include "service-base.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
 {{ include "service-base.imagePullSecrets" . | nindent 6 }}
-{{- with .Values.podSecurityContext }}
+{{- $podSecurityContext := include "service-base.podSecurityContext" . }}
+{{- if $podSecurityContext }}
       securityContext:
-{{ toYaml . | nindent 8 }}
+{{ $podSecurityContext | nindent 8 }}
+{{- end }}
+{{- if .Values.initContainers }}
+      initContainers:
+{{ toYaml .Values.initContainers | nindent 8 }}
 {{- end }}
       containers:
         - name: {{ include "service-base.name" . }}
@@ -46,51 +66,61 @@ spec:
 {{- end }}
           ports:
 {{ toYaml .Values.containerPorts | nindent 12 }}
-{{- if .Values.env }}
-          env:
-{{ toYaml .Values.env | nindent 12 }}
+{{- $env := include "service-base.renderEnv" . }}
+{{- if $env }}
+{{ $env | nindent 10 }}
 {{- end }}
-{{- if .Values.envFrom }}
-          envFrom:
-{{ toYaml .Values.envFrom | nindent 12 }}
+{{- $envFrom := include "service-base.renderEnvFrom" . }}
+{{- if $envFrom }}
+{{ $envFrom | nindent 10 }}
 {{- end }}
 {{- with .Values.resources }}
           resources:
 {{ toYaml . | nindent 12 }}
 {{- end }}
-{{- with .Values.containerSecurityContext }}
+{{- $containerSecurityContext := include "service-base.securityContext" . }}
+{{- if $containerSecurityContext }}
           securityContext:
-{{ toYaml . | nindent 12 }}
+{{ $containerSecurityContext | nindent 12 }}
 {{- end }}
-{{- with .Values.livenessProbe }}
+{{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-{{ toYaml . | nindent 12 }}
+{{ omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
 {{- end }}
-{{- with .Values.readinessProbe }}
+{{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-{{ toYaml . | nindent 12 }}
+{{ omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
 {{- end }}
-{{- with .Values.startupProbe }}
+{{- if .Values.startupProbe.enabled }}
           startupProbe:
-{{ toYaml . | nindent 12 }}
+{{ omit .Values.startupProbe "enabled" | toYaml | nindent 12 }}
 {{- end }}
 {{- if or .Values.configMounts .Values.extraVolumeMounts }}
           volumeMounts:
 {{- if .Values.configMounts }}
-{{ include "service-base.configMounts" . | nindent 12 }}
+{{ include "service-base.config" . | nindent 12 }}
 {{- end }}
-{{- if .Values.extraVolumeMounts }}
-{{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+{{- $extraVolumeMounts := include "service-base.renderExtraVolumeMounts" . }}
+{{- if $extraVolumeMounts }}
+{{ $extraVolumeMounts | nindent 12 }}
 {{- end }}
+{{- end }}
+{{- if .Values.extraContainers }}
+{{ toYaml .Values.extraContainers | nindent 8 }}
 {{- end }}
 {{- if or .Values.configMounts .Values.extraVolumes }}
       volumes:
 {{- if .Values.configMounts }}
 {{ include "service-base.configVolumes" . | nindent 8 }}
 {{- end }}
-{{- if .Values.extraVolumes }}
-{{ toYaml .Values.extraVolumes | nindent 8 }}
+{{- $extraVolumes := include "service-base.renderExtraVolumes" . }}
+{{- if $extraVolumes }}
+{{ $extraVolumes | nindent 8 }}
 {{- end }}
+{{- end }}
+{{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml .Values.topologySpreadConstraints | nindent 8 }}
 {{- end }}
 {{- with .Values.nodeSelector }}
       nodeSelector:

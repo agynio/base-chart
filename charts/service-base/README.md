@@ -35,8 +35,8 @@ Other available templates:
 - `service-base.pdb`
 - `service-base.serviceAccount`
 - `service-base.rbac`
-- `service-base.configMounts` (volume mounts helper)
-- `service-base.servicemonitor`
+- `service-base.config` (volume mounts helper)
+- `service-base.metrics`
 
 ## Values
 
@@ -44,12 +44,13 @@ Key values (see `values.yaml` for full list):
 
 - `image.repository` (required)
 - `image.tag` (defaults to `.Chart.AppVersion`)
+- `global.imageRegistry` and `image.registry` (registry resolution)
 - `global.imagePullSecrets` and `image.pullSecrets` (merged in PodSpec)
-- `service.port`, `service.targetPort`, `service.portName`
-- `ingress.hosts[].paths[]` for HTTP routing
+- `service.ports[]` for service ports
+- `ingress.ingressClassName` and `ingress.hosts[].paths[]`
 - `autoscaling` for HPA targets/behavior
 - `pdb` for PodDisruptionBudget settings
-- `configMounts` to mount existing ConfigMaps/Secrets
+- `configMounts[].sourceName` to mount existing ConfigMaps/Secrets
 - `metrics.serviceMonitor` for Prometheus Operator ServiceMonitors
 
 ### Example values for a service chart
@@ -59,8 +60,10 @@ image:
   repository: ghcr.io/agynio/my-service
 
 service:
-  port: 8080
-  targetPort: http
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
 
 ingress:
   enabled: true
@@ -73,6 +76,7 @@ ingress:
 
 configMounts:
   - name: my-service-config
+    sourceName: my-service-config
     type: configMap
     mountPath: /etc/service/config.yaml
     subPath: config.yaml

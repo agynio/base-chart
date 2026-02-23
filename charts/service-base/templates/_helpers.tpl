@@ -54,7 +54,13 @@ default
 {{- end -}}
 
 {{- define "service-base.image" -}}
+{{- $registry := default .Values.global.imageRegistry .Values.image.registry -}}
+{{- $registry = trimSuffix "/" $registry -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry .Values.image.repository (include "service-base.imageTag" .) -}}
+{{- else -}}
 {{- printf "%s:%s" .Values.image.repository (include "service-base.imageTag" .) -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "service-base.imagePullSecrets" -}}
@@ -80,27 +86,94 @@ imagePullSecrets:
 {{- end }}
 {{- end -}}
 
+{{- define "service-base.config" -}}
+{{- include "service-base.configVolumeMounts" . -}}
+{{- end -}}
+
 {{- define "service-base.configMounts" -}}
 {{- include "service-base.configVolumeMounts" . -}}
 {{- end -}}
 
 {{- define "service-base.configVolumes" -}}
 {{- range .Values.configMounts }}
+{{- $sourceName := required "configMounts[].sourceName is required" .sourceName -}}
 - name: {{ .name }}
   {{- if eq (default "configMap" .type) "secret" }}
   secret:
-    secretName: {{ .name }}
+    secretName: {{ $sourceName }}
     {{- if .items }}
     items:
 {{ toYaml .items | nindent 6 }}
     {{- end }}
   {{- else }}
   configMap:
-    name: {{ .name }}
+    name: {{ $sourceName }}
     {{- if .items }}
     items:
 {{ toYaml .items | nindent 6 }}
     {{- end }}
   {{- end }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.commonAnnotations" -}}
+{{- $annotations := dict -}}
+{{- with .Values.commonAnnotations }}
+{{- $annotations = merge $annotations . -}}
+{{- end }}
+{{- with .Values.deploymentAnnotations }}
+{{- $annotations = merge $annotations . -}}
+{{- end }}
+{{- if $annotations }}
+{{ toYaml $annotations }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.renderEnv" -}}
+{{- $env := concat (.Values.env | default (list)) (.Values.extraEnvVars | default (list)) -}}
+{{- if $env }}
+env:
+{{ toYaml $env | nindent 2 }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.renderEnvFrom" -}}
+{{- $envFrom := list -}}
+{{- if .Values.envFrom }}
+{{- $envFrom = concat $envFrom .Values.envFrom -}}
+{{- end }}
+{{- if .Values.extraEnvVarsCM }}
+{{- $envFrom = append $envFrom (dict "configMapRef" (dict "name" .Values.extraEnvVarsCM)) -}}
+{{- end }}
+{{- if .Values.extraEnvVarsSecret }}
+{{- $envFrom = append $envFrom (dict "secretRef" (dict "name" .Values.extraEnvVarsSecret)) -}}
+{{- end }}
+{{- if $envFrom }}
+envFrom:
+{{ toYaml $envFrom | nindent 2 }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.renderExtraVolumes" -}}
+{{- if .Values.extraVolumes }}
+{{ toYaml .Values.extraVolumes }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.renderExtraVolumeMounts" -}}
+{{- if .Values.extraVolumeMounts }}
+{{ toYaml .Values.extraVolumeMounts }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.podSecurityContext" -}}
+{{- with .Values.podSecurityContext }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{- define "service-base.securityContext" -}}
+{{- with .Values.containerSecurityContext }}
+{{ toYaml . }}
 {{- end }}
 {{- end -}}
